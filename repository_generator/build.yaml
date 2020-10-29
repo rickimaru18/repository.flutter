@@ -1,0 +1,8 @@
+builders:
+  http_requestor:
+    import: "package:repository_generator/builder.dart"
+    builder_factories: ["httpRequestor"]
+    build_extensions: {".dart": [".http_requestor.g.part"]}
+    auto_apply: dependents
+    build_to: cache
+    applies_builders: ["source_gen|combining_builder"]

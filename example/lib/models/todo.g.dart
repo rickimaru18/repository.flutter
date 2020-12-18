@@ -23,7 +23,10 @@ class TodoRequestor extends Todo with HttpRequestor {
   String get endpoint => 'todos';
 
   @override
-  String get endpointId => id.toString();
+  String get putUrlExtension => '$id';
+
+  @override
+  String get patchUrlExtension => '$id';
 
   @override
   TodoRequestor fromJson(Map<String, dynamic> json) {

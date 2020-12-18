@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:repository/repository.dart';
 
 void main() {
-  HttpRequestor.init(
+  Repo.init(
     'https://jsonplaceholder.typicode.com',
     <Type, RequestorBuilder>{
       TodoRequestor: () => TodoRequestor(),
@@ -32,42 +32,20 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class MyHomePage extends StatefulWidget {
+class MyHomePage extends StatelessWidget {
   @override
-  _MyHomePageState createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  @override
-  Widget build(BuildContext context) {
+  Widget build(_) {
     return Scaffold(
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          _buildTodoList(),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          TodoRequestor newTodo = TodoRequestor(
-              id: 201, userId: 1, title: 'test POST', completed: false);
-
-          newTodo = await HttpRequestor.post<TodoRequestor>(newTodo);
-          print('!!!!!!!!! new TODO = ${newTodo.toJson()}');
-
-          newTodo.id = 1;
-          newTodo.title = 'test PUT';
-          newTodo = await HttpRequestor.put<TodoRequestor>(newTodo);
-          print('!!!!!!!!! new TODO = ${newTodo.toJson()}');
-
-          newTodo =
-              await HttpRequestor.patch<TodoRequestor>(newTodo, <String, bool>{
-            'completed': true,
-          });
-          print('!!!!!!!!! new TODO = ${newTodo.toJson()}');
-          setState(() {});
-        },
-        child: const Icon(Icons.add),
+      body: Builder(
+        builder: (BuildContext context) => Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _buildTodoList(),
+            _buildPostTile(context),
+            _buildPutTile(context),
+            _buildPatchTile(context),
+          ],
+        ),
       ),
     );
   }
@@ -76,36 +54,106 @@ class _MyHomePageState extends State<MyHomePage> {
   ///
   ///
   Widget _buildTodoList() => FutureBuilder<List<Todo>>(
-        future: HttpRequestor.getList<TodoRequestor>(),
-        initialData: [],
-        builder: (_, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          } else if (snapshot.data == null) {
-            return const Center(
-              child: const Text('NULL DATA!'),
-            );
-          }
+    future: Repo.httpGETList<TodoRequestor>(),
+    initialData: [],
+    builder: (_, snapshot) {
+      if (snapshot.connectionState == ConnectionState.waiting) {
+        return const Center(
+          child: CircularProgressIndicator(),
+        );
+      } else if (snapshot.hasError) {
+        return Center(
+          child: Text('${snapshot.error.toString()}'),
+        );
+      } else if (snapshot.data == null) {
+        return const Center(
+          child: const Text('NULL DATA!'),
+        );
+      }
 
-          final List<Todo> todos = snapshot.data;
+      final List<Todo> todos = snapshot.data;
 
-          return Expanded(
-            child: ListView.builder(
-              itemCount: todos.length,
-              itemBuilder: (_, int index) => ListTile(
-                title: Text(todos[index].title),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Text('ID: ${todos[index].id}'),
-                    Text(todos[index].completed ? 'Completed' : 'TODO'),
-                  ],
-                ),
-              ),
+      return Expanded(
+        child: ListView.builder(
+          itemCount: todos.length,
+          itemBuilder: (_, int index) => ListTile(
+            title: Text(todos[index].title),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text('ID: ${todos[index].id}'),
+                Text('User ID: ${todos[index].userId}'),
+                Text(todos[index].completed ? 'Completed' : 'TODO'),
+              ],
             ),
-          );
+          ),
+        ),
+      );
+    },
+  );
+
+  ///
+  ///
+  ///
+  Widget _buildPostTile(BuildContext context) => RaisedButton(
+    onPressed: () async {
+      TodoRequestor newTodo = TodoRequestor(
+        id: 201,
+        userId: 1,
+        title: 'test POST',
+        completed: false
+      );
+
+      newTodo = await Repo.httpPOST<TodoRequestor>(newTodo);
+      Scaffold.of(context).showSnackBar(SnackBar(
+        content: Text('POST new TODO result = ${newTodo?.toJson()}')
+      ));
+    },
+    child: const Text('TEST POST'),
+  );
+
+  ///
+  ///
+  ///
+  Widget _buildPutTile(BuildContext context) => RaisedButton(
+    onPressed: () async {
+      TodoRequestor updatedTodo = TodoRequestor(
+        id: 1,
+        userId: 1,
+        title: 'test PUT',
+        completed: false
+      );
+
+      updatedTodo = await Repo.httpPUT<TodoRequestor>(updatedTodo);
+      Scaffold.of(context).showSnackBar(SnackBar(
+        content: Text('PUT new TODO result = ${updatedTodo?.toJson()}')
+      ));
+    },
+    child: const Text('TEST PUT'),
+  );
+
+  ///
+  ///
+  ///
+  Widget _buildPatchTile(BuildContext context) => RaisedButton(
+    onPressed: () async {
+      final TodoRequestor existingTodo = TodoRequestor(
+        id: 1,
+        userId: 1,
+        title: 'delectus aut autem',
+        completed: false
+      );
+      final TodoRequestor patchedTodo = await Repo.httpPATCH<TodoRequestor>(
+        existingTodo,
+        <String, dynamic>{
+          'title': 'test PATCH',
+          'completed': true,
         },
       );
+      Scaffold.of(context).showSnackBar(SnackBar(
+        content: Text('PATCH new TODO result = ${patchedTodo?.toJson()}')
+      ));
+    },
+    child: const Text('TEST PATCH'),
+  );
 }

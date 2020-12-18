@@ -22,6 +22,11 @@ class HttpRequestorGenerator extends GeneratorForAnnotation<Requestor> {
     _endpoint = annotation.objectValue.getField('endpoint').toStringValue();
     _endpoint = _endpoint.replaceAll('@', '\$');
 
+    String putUrlExtension = annotation.objectValue.getField('putUrlExtension').toStringValue();
+    putUrlExtension = putUrlExtension.replaceAll('@', '\$');
+    String patchUrlExtension = annotation.objectValue.getField('patchUrlExtension').toStringValue();
+    patchUrlExtension = patchUrlExtension.replaceAll('@', '\$');
+
     sb.writeln('class $_className extends $_parentClassName');
     sb.writeln('with HttpRequestor {');
 
@@ -30,6 +35,16 @@ class HttpRequestorGenerator extends GeneratorForAnnotation<Requestor> {
 
       sb.writeln('@override');
       sb.writeln("String get endpoint => '$_endpoint';\n");
+
+      if (putUrlExtension.isNotEmpty) {
+        sb.writeln('@override');
+        sb.writeln("String get putUrlExtension => '$putUrlExtension';\n");
+      }
+
+      if (patchUrlExtension.isNotEmpty) {
+        sb.writeln('@override');
+        sb.writeln("String get patchUrlExtension => '$patchUrlExtension';\n");
+      }
 
       readFieldAnnotations(element.fields, sb);
       sb.writeln();

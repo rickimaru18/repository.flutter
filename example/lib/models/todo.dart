@@ -2,9 +2,13 @@ import 'package:repository/repository.dart';
 
 part 'todo.g.dart';
 
-@Requestor('todos')
+@Requestor(
+  'todos',
+  putUrlExtension: '@id',
+  patchUrlExtension: '@id',
+)
 class Todo {
-  @ID
+  @HttpId
   int id;
   int userId;
 	String title;

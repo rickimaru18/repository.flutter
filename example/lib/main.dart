@@ -36,15 +36,18 @@ class MyHomePage extends StatelessWidget {
   @override
   Widget build(_) {
     return Scaffold(
-      body: Builder(
-        builder: (BuildContext context) => Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _buildTodoList(),
-            _buildPostTile(context),
-            _buildPutTile(context),
-            _buildPatchTile(context),
-          ],
+      body: SafeArea(
+        child: Builder(
+          builder: (BuildContext context) => Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _buildTodoList(),
+              _buildPostTile(context),
+              _buildPutTile(context),
+              _buildPatchTile(context),
+              _buildDeleteTile(context),
+            ],
+          ),
         ),
       ),
     );
@@ -155,5 +158,26 @@ class MyHomePage extends StatelessWidget {
       ));
     },
     child: const Text('TEST PATCH'),
+  );
+
+  ///
+  ///
+  ///
+  Widget _buildDeleteTile(BuildContext context) => RaisedButton(
+    onPressed: () async {
+      final TodoRequestor existingTodo = TodoRequestor(
+        id: 1,
+        userId: 1,
+        title: 'delectus aut autem',
+        completed: false
+      );
+      final bool isDeleted = await Repo.httpDELETE<TodoRequestor>(
+        existingTodo
+      ) != null;
+      Scaffold.of(context).showSnackBar(SnackBar(
+        content: Text('DELETED TODO result = $isDeleted')
+      ));
+    },
+    child: const Text('TEST DELETE'),
   );
 }

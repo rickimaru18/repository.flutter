@@ -6,6 +6,7 @@ part 'todo.g.dart';
   'todos',
   putUrlExtension: '@id',
   patchUrlExtension: '@id',
+  deleteUrlExtension: '@id',
 )
 class Todo {
   @HttpId

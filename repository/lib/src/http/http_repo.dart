@@ -94,21 +94,27 @@ class HttpRepo {
     HttpRequestor requestor,
     {
       String endpointExtension = '',
+      bool isEndpointExtensionAppended = true,
       Map<String, dynamic> params,
       Map<String, dynamic> body
     }
   ) async {
-    switch (type) {
-      case PostType.PUT:
-        endpointExtension = requestor.putUrlExtension;
-        break;
+    if (isEndpointExtensionAppended) {
+      final String appendedEndpointExtension = endpointExtension.isNotEmpty
+          ? '/$endpointExtension'
+          : endpointExtension;
+      switch (type) {
+        case PostType.PUT:
+          endpointExtension = '${requestor.putUrlExtension}$appendedEndpointExtension';
+          break;
 
-      case PostType.PATCH:
-        endpointExtension = requestor.patchUrlExtension;
-        break;
+        case PostType.PATCH:
+          endpointExtension = '${requestor.patchUrlExtension}$appendedEndpointExtension';
+          break;
 
-      default:
-        break;
+        default:
+          break;
+      }
     }
 
     final String url = _getUrl(
@@ -159,13 +165,37 @@ class HttpRepo {
   /// Http DELETE request.
   ///
   ///
-  Future<String> delete(String endpoint, {Map<String, dynamic> params}) async {
-    final String query = _toQueryString(params);
+  Future<T> delete<T>(
+    HttpRequestor requestor,
+    {
+      String endpointExtension = '',
+      bool isEndpointExtensionAppended = true,
+      Map<String, dynamic> params,
+    }
+  ) async {
+    if (isEndpointExtensionAppended) {
+      final String appendedEndpointExtension = endpointExtension.isNotEmpty
+          ? '/$endpointExtension'
+          : endpointExtension;
+      endpointExtension = '${requestor.deleteUrlExtension}$appendedEndpointExtension';
+    }
+
+    final String url = _getUrl(
+      requestor.endpoint,
+      endpointExtension: endpointExtension,
+      params: params
+    );
     final http.Response response = await http.delete(
-      '$baseUrl/$endpoint$query',
+      url,
       headers: headers,
     );
-    return _getResponseBody(response);
+    final String jsonResponse = _getResponseBody(response);
+
+    if (jsonResponse == null) {
+      return null;
+    }
+
+    return requestor.fromJson(jsonDecode(jsonResponse)) as T;
   }
 
   /// Get full URL.

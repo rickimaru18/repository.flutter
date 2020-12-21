@@ -20,4 +20,9 @@ abstract class HttpRequestor implements TemplateRequestor {
   ///
   ///
   String get patchUrlExtension => '';
+
+  /// Get DELETE url endpoint extension.
+  ///
+  ///
+  String get deleteUrlExtension => '';
 }

@@ -7,6 +7,7 @@ class Requestor {
     {
       this.putUrlExtension = '',
       this.patchUrlExtension = '',
+      this.deleteUrlExtension = '',
       // this.subRequestors
     }
   );
@@ -17,6 +18,8 @@ class Requestor {
   final String putUrlExtension;
   /// Http PATCH request URL extension. Will be appended after [endpoint].
   final String patchUrlExtension;
+  /// Http DELETE request URL extension. Will be appended after [endpoint].
+  final String deleteUrlExtension;
   // final List<_SubRequestor> subRequestors;
 }
 

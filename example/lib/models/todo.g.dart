@@ -29,6 +29,9 @@ class TodoRequestor extends Todo with HttpRequestor {
   String get patchUrlExtension => '$id';
 
   @override
+  String get deleteUrlExtension => '$id';
+
+  @override
   TodoRequestor fromJson(Map<String, dynamic> json) {
     final Todo obj = TodoRequestor();
     obj.id = json['id'] as int;

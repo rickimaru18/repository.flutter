@@ -55,19 +55,34 @@ class Repo {
   ///
   static Future<T> httpGET<T extends HttpRequestor>({
     String endpointExtension = '',
-    Map<String, dynamic> params
+    Map<String, dynamic> params,
+    int retryCount = 5,
   }) async {
     assert(_httpRepo != null, 'Please call Repo.init(...) first.');
 
     final HttpRequestor requestor = _requestors[T]?.call();
     
-    return requestor != null
-        ? (await _httpRepo.httpGET(
+    if (requestor == null) {
+      return null;
+    }
+
+    T result;
+
+    do {
+      try {
+        result = (await _httpRepo.httpGET<T>(
           requestor,
           endpointExtension: endpointExtension,
           params: params
-        )).first
-        : null;
+        ))?.first;
+        retryCount = 0;
+      } catch(e) {
+        print('>>>>>>>>> Delete ERROR = $e... Retrying...');
+        retryCount--;
+      }
+    } while(retryCount > 0);
+
+    return result;
   }
 
   /// Http GET request.
@@ -75,19 +90,34 @@ class Repo {
   ///
   static Future<List<T>> httpGETList<T extends HttpRequestor>({
     String endpointExtension = '',
-    Map<String, dynamic> params
+    Map<String, dynamic> params,
+    int retryCount = 5,
   }) async {
     assert(_httpRepo != null, 'Please call Repo.init(...) first.');
 
     final HttpRequestor requestor = _requestors[T]?.call();
     
-    return requestor != null
-        ? await _httpRepo.httpGET(
+    if (requestor == null) {
+      return null;
+    }
+
+    List<T> result;
+
+    do {
+      try {
+        result = await _httpRepo.httpGET<T>(
           requestor,
           endpointExtension: endpointExtension,
           params: params
-        )
-        : null;
+        );
+        retryCount = 0;
+      } catch(e) {
+        print('>>>>>>>>> Delete ERROR = $e... Retrying...');
+        retryCount--;
+      }
+    } while(retryCount > 0);
+
+    return result;
   }
 
   /// Http POST request.
@@ -99,18 +129,31 @@ class Repo {
     {
       String endpointExtension = '',
       Map<String, dynamic> params,
-      Map<String, dynamic> body
+      Map<String, dynamic> body,
+      int retryCount = 5,
     }
   ) async {
     assert(_httpRepo != null, 'Please call Repo.init(...) first.');
 
-    return await _httpRepo.post(
-      PostType.POST,
-      requestor,
-      endpointExtension: endpointExtension,
-      params: params,
-      body: body,
-    );
+    T result;
+
+    do {
+      try {
+        result = await _httpRepo.post<T>(
+          PostType.POST,
+          requestor,
+          endpointExtension: endpointExtension,
+          params: params,
+          body: body,
+        );
+        retryCount = 0;
+      } catch(e) {
+        print('>>>>>>>>> Delete ERROR = $e... Retrying...');
+        retryCount--;
+      }
+    } while(retryCount > 0);
+
+    return result;
   }
 
   /// Http PUT request.
@@ -122,18 +165,31 @@ class Repo {
     {
       String endpointExtension = '',
       Map<String, dynamic> params,
-      Map<String, dynamic> body
+      Map<String, dynamic> body,
+      int retryCount = 5,
     }
   ) async {
     assert(_httpRepo != null, 'Please call Repo.init(...) first.');
 
-    return await _httpRepo.post(
-      PostType.PUT,
-      requestor,
-      endpointExtension: endpointExtension,
-      params: params,
-      body: body,
-    );
+    T result;
+
+    do {
+      try {
+        result = await _httpRepo.post<T>(
+          PostType.PUT,
+          requestor,
+          endpointExtension: endpointExtension,
+          params: params,
+          body: body,
+        );
+        retryCount = 0;
+      } catch(e) {
+        print('>>>>>>>>> Delete ERROR = $e... Retrying...');
+        retryCount--;
+      }
+    } while(retryCount > 0);
+
+    return result;
   }
 
   /// Http PATCH request.
@@ -144,17 +200,62 @@ class Repo {
     Map<String, dynamic> patch,
     {
       String endpointExtension = '',
-      Map<String, dynamic> params
+      Map<String, dynamic> params,
+      int retryCount = 5,
     }
   ) async {
     assert(_httpRepo != null, 'Please call Repo.init(...) first.');
 
-    return await _httpRepo.post(
-      PostType.PATCH,
-      requestor,
-      endpointExtension: endpointExtension,
-      params: params,
-      body: patch,
-    );
+    T result;
+
+    do {
+      try {
+        result = await _httpRepo.post<T>(
+          PostType.PATCH,
+          requestor,
+          endpointExtension: endpointExtension,
+          params: params,
+          body: patch,
+        );
+        retryCount = 0;
+      } catch(e) {
+        print('>>>>>>>>> Delete ERROR = $e... Retrying...');
+        retryCount--;
+      }
+    } while(retryCount > 0);
+
+    return result;
+  }
+
+  /// Http DELETE request.
+  ///
+  ///
+  static Future<T> httpDELETE<T extends HttpRequestor>(
+    HttpRequestor requestor,
+    {
+      String endpointExtension = '',
+      Map<String, dynamic> params,
+      int retryCount = 5,
+    }
+  ) async {
+    assert(_httpRepo != null, 'Please call Repo.init(...) first.');
+    
+    T result;
+
+    do {
+      try {
+        result = await _httpRepo.delete<T>(
+          requestor,
+          endpointExtension: endpointExtension,
+          params: params,
+        );
+        retryCount = 0;
+      } catch(e) {
+        print('>>>>>>>>> Delete ERROR = $e... Retrying...');
+        retryCount--;
+      }
+    } while(retryCount > 0);
+
+    return result;
   }
 }

@@ -1,37 +1,37 @@
 import 'package:repository/repository.dart';
+import 'package:repository/src/common/template_requestor.dart';
+import 'package:repository/src/db/db_repo.dart';
 import 'package:repository/src/http/http_repo.dart';
-// import 'package:repository/src/db/db_repo.dart';
 
-typedef RequestorBuilder = HttpRequestor Function();
+typedef RequestorBuilder = TemplateRequestor Function();
 
 class Repo {
   static HttpRepo _httpRepo;
-  // static DBRepo _dbRepo;
-  static Map<Type, RequestorBuilder> _requestors;
+  static DBRepo _dbRepo;
+  static Map<Type, RequestorBuilder> requestors;
 
   /// Initialize [HttpRequestor].
   ///
   ///
   static Future<void> init(
     String baseUrl,
-    // String dbName,
-    Map<Type, RequestorBuilder> requestors, {
-    Map<String, String> headers,
-  }) async {
-    _requestors = requestors;
+    Map<Type, RequestorBuilder> requestors,
+    {
+      String dbPathAndName,
+      Map<String, String> headers,
+    }
+  ) async {
+    Repo.requestors = requestors;
     _httpRepo = HttpRepo(baseUrl, headers);
-    // _dbRepo = dbName != null && dbName.isNotEmpty
-    //     ? DBRepo(
-    //       dbName,
-    //       onDBCreated: () async {
-    //         for (final Type key in requestors.keys) {
-    //           if (key is DBRequestor) {
-    //             await _dbRepo.createTable(requestors[key]() as DBRequestor);
-    //           }
-    //         }
-    //       }
-    //     )
-    //     : null;
+
+    if (dbPathAndName != null) {
+      _dbRepo = DBRepo(dbPathAndName);
+      await _dbRepo.init();
+
+      requestors.forEach((key, value) {
+        _dbRepo.createTable(value.call());
+      });
+    }
   }
 
   /// Update base Http URL.
@@ -60,8 +60,8 @@ class Repo {
   }) async {
     assert(_httpRepo != null, 'Please call Repo.init(...) first.');
 
-    final HttpRequestor requestor = _requestors[T]?.call();
-    
+    final HttpRequestor requestor = requestors[T]?.call();
+
     if (requestor == null) {
       return null;
     }
@@ -73,14 +73,14 @@ class Repo {
         result = (await _httpRepo.httpGET<T>(
           requestor,
           endpointExtension: endpointExtension,
-          params: params
+          params: params,
         ))?.first;
         retryCount = 0;
-      } catch(e) {
-        print('>>>>>>>>> Delete ERROR = $e... Retrying...');
+      } catch (e) {
+        print('>>>>>>>>> GET ERROR = $e... Retrying...');
         retryCount--;
       }
-    } while(retryCount > 0);
+    } while (retryCount > 0);
 
     return result;
   }
@@ -92,11 +92,12 @@ class Repo {
     String endpointExtension = '',
     Map<String, dynamic> params,
     int retryCount = 5,
+    bool isSaveOffline = true,
   }) async {
     assert(_httpRepo != null, 'Please call Repo.init(...) first.');
 
-    final HttpRequestor requestor = _requestors[T]?.call();
-    
+    final HttpRequestor requestor = requestors[T]?.call();
+
     if (requestor == null) {
       return null;
     }
@@ -108,14 +109,22 @@ class Repo {
         result = await _httpRepo.httpGET<T>(
           requestor,
           endpointExtension: endpointExtension,
-          params: params
+          params: params,
         );
         retryCount = 0;
-      } catch(e) {
-        print('>>>>>>>>> Delete ERROR = $e... Retrying...');
+      } catch (e) {
+        print('>>>>>>>>> GET ERROR = $e... Retrying...');
         retryCount--;
       }
-    } while(retryCount > 0);
+    } while (retryCount > 0);
+
+    if (isSaveOffline && _dbRepo != null) {
+      await _dbRepo.putList(result);
+
+      if (result == null && retryCount == 0) {
+        result = await _dbRepo.select((requestor as DBRequestor).tableName);
+      }
+    }
 
     return result;
   }
@@ -147,11 +156,11 @@ class Repo {
           body: body,
         );
         retryCount = 0;
-      } catch(e) {
-        print('>>>>>>>>> Delete ERROR = $e... Retrying...');
+      } catch (e) {
+        print('>>>>>>>>> POST ERROR = $e... Retrying...');
         retryCount--;
       }
-    } while(retryCount > 0);
+    } while (retryCount > 0);
 
     return result;
   }
@@ -183,11 +192,11 @@ class Repo {
           body: body,
         );
         retryCount = 0;
-      } catch(e) {
-        print('>>>>>>>>> Delete ERROR = $e... Retrying...');
+      } catch (e) {
+        print('>>>>>>>>> PUT ERROR = $e... Retrying...');
         retryCount--;
       }
-    } while(retryCount > 0);
+    } while (retryCount > 0);
 
     return result;
   }
@@ -218,11 +227,11 @@ class Repo {
           body: patch,
         );
         retryCount = 0;
-      } catch(e) {
-        print('>>>>>>>>> Delete ERROR = $e... Retrying...');
+      } catch (e) {
+        print('>>>>>>>>> PATCH ERROR = $e... Retrying...');
         retryCount--;
       }
-    } while(retryCount > 0);
+    } while (retryCount > 0);
 
     return result;
   }
@@ -239,7 +248,7 @@ class Repo {
     }
   ) async {
     assert(_httpRepo != null, 'Please call Repo.init(...) first.');
-    
+
     T result;
 
     do {
@@ -250,11 +259,11 @@ class Repo {
           params: params,
         );
         retryCount = 0;
-      } catch(e) {
+      } catch (e) {
         print('>>>>>>>>> Delete ERROR = $e... Retrying...');
         retryCount--;
       }
-    } while(retryCount > 0);
+    } while (retryCount > 0);
 
     return result;
   }

@@ -6,7 +6,7 @@ part of 'todo.dart';
 // HttpRequestorGenerator
 // **************************************************************************
 
-class TodoRequestor extends Todo with HttpRequestor {
+class TodoRequestor extends Todo with HttpRequestor, DBRequestor {
   TodoRequestor({
     int id,
     int userId,
@@ -30,6 +30,15 @@ class TodoRequestor extends Todo with HttpRequestor {
 
   @override
   String get deleteUrlExtension => '$id';
+
+  @override
+  String get tableName => 'todo';
+
+  @override
+  String get endpointId => id.toString();
+
+  @override
+  String get dbId => id.toString();
 
   @override
   TodoRequestor fromJson(Map<String, dynamic> json) {

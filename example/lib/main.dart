@@ -1,9 +1,17 @@
+import 'dart:io';
+
 import 'package:example/models/todo.dart';
 import 'package:flutter/material.dart';
+import 'package:path/path.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:repository/repository.dart';
 
-void main() {
-  Repo.init(
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final Directory dir = await getApplicationDocumentsDirectory();
+  await dir.create(recursive: true);
+  
+  await Repo.init(
     'https://jsonplaceholder.typicode.com',
     <Type, RequestorBuilder>{
       TodoRequestor: () => TodoRequestor(),
@@ -12,6 +20,7 @@ void main() {
       'Content-type': 'application/json',
       'Accept': 'application/json'
     },
+    dbPathAndName: join(dir.path, 'sample.db'),
   );
 
   runApp(MyApp());

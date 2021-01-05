@@ -8,6 +8,7 @@ class Requestor {
       this.putUrlExtension = '',
       this.patchUrlExtension = '',
       this.deleteUrlExtension = '',
+      this.tableName,
       // this.subRequestors
     }
   );
@@ -20,6 +21,8 @@ class Requestor {
   final String patchUrlExtension;
   /// Http DELETE request URL extension. Will be appended after [endpoint].
   final String deleteUrlExtension;
+  /// Database table name.
+  final String tableName;
   // final List<_SubRequestor> subRequestors;
 }
 

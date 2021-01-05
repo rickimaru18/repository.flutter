@@ -28,9 +28,11 @@ class HttpRequestorGenerator extends GeneratorForAnnotation<Requestor> {
     patchUrlExtension = patchUrlExtension.replaceAll('@', '\$');
     String deleteUrlExtension = annotation.objectValue.getField('deleteUrlExtension').toStringValue();
     deleteUrlExtension = deleteUrlExtension.replaceAll('@', '\$');
+    
+    final String tableName = annotation.objectValue.getField('tableName')?.toStringValue();
 
     sb.writeln('class $_className extends $_parentClassName');
-    sb.writeln('with HttpRequestor {');
+    sb.writeln('with HttpRequestor, DBRequestor {');
 
     if (element is ClassElement) {
       _createConstructor(element.fields, sb);
@@ -51,6 +53,11 @@ class HttpRequestorGenerator extends GeneratorForAnnotation<Requestor> {
       if (deleteUrlExtension.isNotEmpty) {
         sb.writeln('@override');
         sb.writeln("String get deleteUrlExtension => '$deleteUrlExtension';\n");
+      }
+
+      if (tableName != null && tableName.isNotEmpty) {
+        sb.writeln('@override');
+        sb.writeln("String get tableName => '$tableName';\n");
       }
 
       readFieldAnnotations(element.fields, sb);
@@ -111,9 +118,12 @@ class HttpRequestorGenerator extends GeneratorForAnnotation<Requestor> {
       bool isIgnoreField = false;
 
       for (final ElementAnnotation metadata in field.metadata) {
-        if (metadata.toSource().startsWith('@ID')) {
+        if (metadata.toSource().startsWith('@HttpId')) {
           sb.writeln('@override');
           sb.writeln('String get endpointId => ${field.name}.toString();\n');
+        } else if (metadata.toSource().startsWith('@DBId')) {
+          sb.writeln('@override');
+          sb.writeln('String get dbId => ${field.name}.toString();\n');
         } else if (metadata.toSource().startsWith('@Field')) {
           jsonKey = metadata.computeConstantValue()
               .getField('name').toStringValue();
@@ -127,9 +137,9 @@ class HttpRequestorGenerator extends GeneratorForAnnotation<Requestor> {
         continue;
       }
 
-      sbFromJson.writeln("obj.${field.name} = json['${jsonKey}'] as ${field.type.getDisplayString(withNullability: false)};");
+      sbFromJson.writeln("obj.${field.name} = json['$jsonKey'] as ${field.type.getDisplayString(withNullability: false)};");
       
-      sbToJson.writeln("'${jsonKey}': ${field.name},");
+      sbToJson.writeln("'$jsonKey': ${field.name},");
     }
 
     sbFromJson.writeln('return obj;');

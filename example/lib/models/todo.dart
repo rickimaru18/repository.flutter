@@ -7,9 +7,11 @@ part 'todo.g.dart';
   putUrlExtension: '@id',
   patchUrlExtension: '@id',
   deleteUrlExtension: '@id',
+  tableName: 'todo',
 )
 class Todo {
   @HttpId
+  @DBId
   int id;
   int userId;
 	String title;

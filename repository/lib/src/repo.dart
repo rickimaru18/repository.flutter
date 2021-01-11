@@ -140,6 +140,7 @@ class Repo {
       Map<String, dynamic> params,
       Map<String, dynamic> body,
       int retryCount = 5,
+      bool isSaveOffline = true,
     }
   ) async {
     assert(_httpRepo != null, 'Please call Repo.init(...) first.');
@@ -162,6 +163,10 @@ class Repo {
       }
     } while (retryCount > 0);
 
+    if (isSaveOffline && _dbRepo != null) {
+      await _dbRepo.put(result);
+    }
+
     return result;
   }
 
@@ -176,6 +181,7 @@ class Repo {
       Map<String, dynamic> params,
       Map<String, dynamic> body,
       int retryCount = 5,
+      bool isSaveOffline = true,
     }
   ) async {
     assert(_httpRepo != null, 'Please call Repo.init(...) first.');
@@ -198,6 +204,10 @@ class Repo {
       }
     } while (retryCount > 0);
 
+    if (isSaveOffline && _dbRepo != null) {
+      await _dbRepo.put(result);
+    }
+
     return result;
   }
 
@@ -211,6 +221,7 @@ class Repo {
       String endpointExtension = '',
       Map<String, dynamic> params,
       int retryCount = 5,
+      bool isSaveOffline = true,
     }
   ) async {
     assert(_httpRepo != null, 'Please call Repo.init(...) first.');
@@ -233,6 +244,10 @@ class Repo {
       }
     } while (retryCount > 0);
 
+    if (isSaveOffline && _dbRepo != null) {
+      await _dbRepo.put(result);
+    }
+
     return result;
   }
 
@@ -245,6 +260,7 @@ class Repo {
       String endpointExtension = '',
       Map<String, dynamic> params,
       int retryCount = 5,
+      bool isDelteOffline = true,
     }
   ) async {
     assert(_httpRepo != null, 'Please call Repo.init(...) first.');
@@ -264,6 +280,11 @@ class Repo {
         retryCount--;
       }
     } while (retryCount > 0);
+
+    if (isDelteOffline && _dbRepo != null && result != null) {
+      final DBRequestor dbItem = result as DBRequestor;
+      await _dbRepo.delete(dbItem.dbId != null ? dbItem : requestor);
+    }
 
     return result;
   }

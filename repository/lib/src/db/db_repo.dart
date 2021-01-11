@@ -90,17 +90,18 @@ class DBRepo {
     return true;
   }
 
-  /// Update data from database.
-  ///
-  ///
-  Future<bool> update<T>() async {
-    return false;
-  }
-
   /// Delete data from database.
   ///
   ///
-  Future<bool> delete<T>() async {
-    return false;
+  Future<bool> delete<T extends TemplateRequestor>(T item) async {
+    if (item == null) {
+      return false;
+    }
+
+    final DBRequestor dbItem = item as DBRequestor;
+    final store = stringMapStoreFactory.store(dbItem.tableName);
+    await store.record(dbItem.dbId).delete(_database);
+
+    return true;
   }
 }

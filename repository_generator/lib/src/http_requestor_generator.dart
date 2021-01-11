@@ -120,10 +120,10 @@ class HttpRequestorGenerator extends GeneratorForAnnotation<Requestor> {
       for (final ElementAnnotation metadata in field.metadata) {
         if (metadata.toSource().startsWith('@HttpId')) {
           sb.writeln('@override');
-          sb.writeln('String get endpointId => ${field.name}.toString();\n');
+          sb.writeln('String get endpointId => ${field.name}?.toString();\n');
         } else if (metadata.toSource().startsWith('@DBId')) {
           sb.writeln('@override');
-          sb.writeln('String get dbId => ${field.name}.toString();\n');
+          sb.writeln('String get dbId => ${field.name}?.toString();\n');
         } else if (metadata.toSource().startsWith('@Field')) {
           jsonKey = metadata.computeConstantValue()
               .getField('name').toStringValue();

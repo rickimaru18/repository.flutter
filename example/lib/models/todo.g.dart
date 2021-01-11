@@ -35,10 +35,10 @@ class TodoRequestor extends Todo with HttpRequestor, DBRequestor {
   String get tableName => 'todo';
 
   @override
-  String get endpointId => id.toString();
+  String get endpointId => id?.toString();
 
   @override
-  String get dbId => id.toString();
+  String get dbId => id?.toString();
 
   @override
   TodoRequestor fromJson(Map<String, dynamic> json) {
